@@ -14,32 +14,22 @@ func testPanic(t *testing.T, f func()) {
 	f()
 }
 
-func tableIdentical(a, b T) bool {
-	return reflect.DeepEqual(a, b)
+func testTableIdentical(t *testing.T, expected, actual T) {
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("expected: %v, actual: %v", expected, actual)
+	}
 }
 
-func TestTIdentical(t *testing.T) {
-	cases := []struct {
-		a, b   T
-		result bool
-	}{
-		{T{}, T{}, true},
-		{T{}, T{[]float64{}}, false},
-		{T{[]float64{}}, T{[]float64{}}, true},
-		{T{[]float64{}}, T{[]float64{1}}, false},
-		{T{[]float64{1}}, T{[]float64{1}}, true},
-		{T{[]float64{1}, []int{}}, T{[]float64{1}}, false},
-		{T{[]float64{1}, []int{}}, T{[]float64{1}, []int{}}, true},
-		{T{[]float64{1}, []int{2}}, T{[]float64{1}, []int{2}}, true},
-		{T{[]float64{1}, []int{2, 3}}, T{[]float64{1}, []int{2, 2}}, false},
-		{T{[]float64{1}, []int{2, 3}}, T{[]float64{1}, []int{2, 3}}, true},
-	}
-
-	for _, c := range cases {
-		expected := c.result
-		actual := tableIdentical(c.a, c.b)
-		if expected != actual {
-			t.Errorf("expected: %v, actual: %v", expected, actual)
+func testTableCapacity(t *testing.T, expected int, table T) {
+	if len(table) == 0 {
+	} else {
+		for row := range table {
+			v := reflect.ValueOf(table[row])
+			actual := v.Cap()
+			if expected != actual {
+				t.Errorf("table: %v, row: %v, expected cap: %v, actual cap: %v",
+					table, row, expected, actual)
+			}
 		}
 	}
 }
@@ -47,185 +37,102 @@ func TestTIdentical(t *testing.T) {
 func TestAppend(t *testing.T) {
 	cases := []struct {
 		a, b, result T
+		resultCap    int
 	}{
 		{
 			T{},
 			T{},
-			T{},
+			T{}, 0,
 		},
 		{
-			T{[]float64{}},
-			T{[]float64{}},
-			T{[]float64{}},
+			T{[]int{}},
+			T{[]int{}},
+			T{[]int{}}, 0,
 		},
 		{
-			T{[]float64{1, 2, 3}},
-			T{[]float64{}},
-			T{[]float64{1, 2, 3}},
+			T{[]int{}},
+			T{[]int{0}},
+			T{[]int{0}}, 1,
 		},
 		{
-			T{[]float64{}},
-			T{[]float64{4, 5, 6}},
-			T{[]float64{4, 5, 6}},
+			T{[]int{1}},
+			T{[]int{2}},
+			T{[]int{1, 2}}, 2,
 		},
 		{
-			T{[]float64{1, 2}},
-			T{[]float64{4, 5}},
-			T{[]float64{1, 2, 4, 5}},
+			T{[]int{1, 2}},
+			T{[]int{3}},
+			T{[]int{1, 2, 3}}, 4,
 		},
 		{
-			T{[]float64{1, 2}, []int{3, 4}},
-			T{[]float64{4, 5}, []int{8, 9}},
-			T{[]float64{1, 2, 4, 5}, []int{3, 4, 8, 9}},
+			T{[]int{1, 2, 3}},
+			T{[]int{4}},
+			T{[]int{1, 2, 3, 4}}, 6,
 		},
 		{
-			T{[]uint{0, 1, 2, 3}, []rune{'a', 'b', 'c', 'd'}},
-			T{[]uint{4}, []rune{'e'}},
-			T{[]uint{0, 1, 2, 3, 4}, []rune{'a', 'b', 'c', 'd', 'e'}},
+			T{make([]int, 4, 16)},
+			T{[]int{5}},
+			T{[]int{0, 0, 0, 0, 5}}, 16,
 		},
 		{
-			T{[]uint{0, 1, 2, 3}},
-			T{uint(4)},
-			T{[]uint{0, 1, 2, 3, 4}},
+			T{[]int{}, []float64{}},
+			T{[]int{}, []float64{}},
+			T{[]int{}, []float64{}}, 0,
 		},
 		{
-			T{'j'},
-			T{[]rune{'e', 'n', 'd'}},
-			T{[]rune{'j', 'e', 'n', 'd'}},
+			T{[]int{1}, []float64{1}},
+			T{[]int{2}, []float64{2}},
+			T{[]int{1, 2}, []float64{1, 2}}, 2,
 		},
 		{
-			T{'j'},
-			T{'e'},
-			T{[]rune{'j', 'e'}},
+			T{[]int{1, 2, 3, 4}},
+			T{5},
+			T{[]int{1, 2, 3, 4, 5}}, 8,
 		},
 		{
-			T{'j', 3, 0.2},
-			T{[]rune{'a', 'b', 'c'}, []int{1, 2, 3}, []float64{0.1, 0, -0.1}},
-			T{[]rune{'j', 'a', 'b', 'c'}, []int{3, 1, 2, 3}, []float64{0.2, 0.1, 0, -0.1}},
-		},
-		{
-			T{[]rune{'a', 'b', 'c'}, []int{1, 2, 3}, []float64{0.1, 0, -0.1}},
-			T{'j', 3, 0.2},
-			T{[]rune{'a', 'b', 'c', 'j'}, []int{1, 2, 3, 3}, []float64{0.1, 0, -0.1, 0.2}},
+			T{[]int{1, 2, 3, 4, 5, 6}, []float64{1, 2, 3, 4, 5, 6}},
+			T{7, 7.0},
+			T{[]int{1, 2, 3, 4, 5, 6, 7}, []float64{1, 2, 3, 4, 5, 6, 7}}, 12,
 		},
 	}
 
 	for _, c := range cases {
-		expected := c.result
 		actual := Append(c.a, c.b)
-		if !tableIdentical(expected, actual) {
-			t.Errorf("expected: %v, actual: %v", expected, actual)
-		}
-	}
-
-
-	for _, f := range []func() {
-		func() { Append(T{}, T{[]float64{}}) },
-		func() { Append(T{[]float64{}}, T{}) },
-		func() { Append(T{[]float64{}}, T{[]int{}}) },
-		func() { Append(T{[]float64{}}, T{[]float64{}, []int{}}) },
-	}{
-		testPanic(t, f)
+		testTableIdentical(t, c.result, actual)
+		testTableCapacity(t, c.resultCap, actual)
 	}
 }
 
-func TestDelete(t *testing.T) {
+func TestFilter(t *testing.T) {
 	cases := []struct {
-		index         int
+		function      func(column T) bool
 		table, result T
 	}{
 		{
-			0,
-			T{[]int{1, 2, 3}},
-			T{[]int{2, 3}},
+			func(T) bool { return false },
+			T{[]int{1, 2, 3, 4}},
+			T{[]int{}},
 		},
 		{
-			1,
-			T{[]int{1, 2, 3}},
-			T{[]int{1, 3}},
+			func(T) bool { return true },
+			T{[]int{1, 2, 3, 4}},
+			T{[]int{1, 2, 3, 4}},
 		},
 		{
-			2,
-			T{[]int{1, 2, 3}},
-			T{[]int{1, 2}},
+			func(col T) bool { return col[0].(int) > 3 },
+			T{[]int{1, 2, 3, 4, 5, 6}},
+			T{[]int{4, 5, 6}},
 		},
 		{
-			1,
-			T{[]int{1, 2, 3}, []rune{'a', 'b', 'c'}},
-			T{[]int{1, 3}, []rune{'a', 'c'}},
-		},
-		{
-			0,
-			T{[]int{1}, []rune{'a'}, []float64{0.2}},
-			T{[]int{}, []rune{}, []float64{}},
-		},
-		{
-			0,
-			T{0.2, 'b', 3},
-			T{[]float64{}, []rune{}, []int{}},
+			func(col T) bool { return col[0].(int)%2 == 0 },
+			T{[]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}},
+			T{[]int{2, 4, 6, 8, 10, 12, 14, 16}},
 		},
 	}
 
 	for _, c := range cases {
-		expected := c.result
-		c.table.Delete(c.index)
-		actual := c.table
-		if !tableIdentical(expected, actual) {
-			t.Errorf("expected: %v, actual: %v", expected, actual)
-		}
-	}
-}
-
-func TestDeleteUnordered(t *testing.T) {
-	cases := []struct {
-		index         int
-		table, result T
-	}{
-		{
-			0,
-			T{[]int{1, 2, 3}},
-			T{[]int{3, 2}},
-		},
-		{
-			1,
-			T{[]int{1, 2, 3}},
-			T{[]int{1, 3}},
-		},
-		{
-			2,
-			T{[]int{1, 2, 3}},
-			T{[]int{1, 2}},
-		},
-		{
-			0,
-			T{[]int{1, 2, 3}, []rune{'a', 'b', 'c'}},
-			T{[]int{3, 2}, []rune{'c', 'b'}},
-		},
-
-		{
-			1,
-			T{[]int{1, 2, 3}, []rune{'a', 'b', 'c'}},
-			T{[]int{1, 3}, []rune{'a', 'c'}},
-		},
-		{
-			0,
-			T{[]int{1}, []rune{'a'}, []float64{0.2}},
-			T{[]int{}, []rune{}, []float64{}},
-		},
-		{
-			0,
-			T{0.2, 'b', 3},
-			T{[]float64{}, []rune{}, []int{}},
-		},
-	}
-
-	for _, c := range cases {
-		expected := c.result
-		c.table.DeleteUnordered(c.index)
-		actual := c.table
-		if !tableIdentical(expected, actual) {
-			t.Errorf("expected: %v, actual: %v", expected, actual)
-		}
+		actual := Filter(c.table, c.function)
+		testTableIdentical(t, c.result, actual)
 	}
 }
 
@@ -255,24 +162,12 @@ func TestSlice(t *testing.T) {
 				[]rune{'2', '3', '4'},
 			},
 		},
-		{
-			0, 0,
-			T{'a', 0.2, 3},
-			T{[]rune{}, []float64{}, []int{}},
-		},
-		{
-			0, 1,
-			T{'a', 0.2, 3},
-			T{[]rune{'a'}, []float64{0.2}, []int{3}},
-		},
 	}
 
 	for _, c := range cases {
 		expected := c.result
 		actual := c.table.Slice(c.i, c.j)
-		if !tableIdentical(expected, actual) {
-			t.Errorf("expected: %v, actual: %v", expected, actual)
-		}
+		testTableIdentical(t, expected, actual)
 	}
 }
 
@@ -300,11 +195,6 @@ func TestLen(t *testing.T) {
 		{100, T{
 			make([]int, 100),
 		}},
-		{1, T{
-			0.1,
-			2,
-			'3',
-		}},
 	}
 
 	for _, c := range cases {
@@ -316,42 +206,37 @@ func TestLen(t *testing.T) {
 	}
 }
 
-func TestFilter(t *testing.T) {
+func TestSwap(t *testing.T) {
 	cases := []struct {
-		function      func(column T) bool
+		i, j          int
 		table, result T
 	}{
+		{0, 0, T{[]int{1}}, T{[]int{1}}},
+		{0, 1, T{[]int{1, 2}}, T{[]int{2, 1}}},
+		{0, 1, T{[]int{1, 2, 3}}, T{[]int{2, 1, 3}}},
+		{0, 2, T{[]int{1, 2, 3}}, T{[]int{3, 2, 1}}},
+		{1, 2, T{[]int{1, 2, 3}}, T{[]int{1, 3, 2}}},
+		{2, 2, T{[]int{1, 2, 3}}, T{[]int{1, 2, 3}}},
 		{
-			func(T) bool { return false },
-			T{[]int{1, 2 ,3}},
-			T{[]int{}},
-		},
-		{
-			func(T) bool { return true },
-			T{[]int{1, 2 ,3}},
-			T{[]int{1, 2, 3}},
-		},
-		{
-			func(col T) bool { return col[0].(int) > 3 },
-			T{[]int{1, 2, 3, 4, 5, 6}},
-			T{[]int{4, 5, 6}},
-		},
-		{
-			func(col T) bool { return col[0].(int) % 2 == 0 },
-			T{[]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}},
-			T{[]int{2, 4, 6, 8, 10, 12, 14, 16}},
+			1, 2,
+			T{
+				[]int{1, 2, 3},
+				[]rune{'1', '2', '3'},
+			},
+			T{
+				[]int{1, 3, 2},
+				[]rune{'1', '3', '2'},
+			},
 		},
 	}
 
 	for _, c := range cases {
 		expected := c.result
-		actual := Filter(c.table, c.function)
-		if !tableIdentical(expected, actual) {
-			t.Errorf("expected: %v, actual: %v", expected, actual)
-		}
+		c.table.Swap(c.i, c.j)
+		actual := c.table
+		testTableIdentical(t, expected, actual)
 	}
 }
-
 
 func BenchmarkFilter(b *testing.B) {
 	t := T{

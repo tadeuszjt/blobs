@@ -50,28 +50,31 @@ func breedPosition(parent geom.Vec2) geom.Vec2 {
 }
 
 func update() {
+	positions := blobs[0].([]geom.Vec2)
+	colours := blobs[1].([]color.RGBA)
+	ages := blobs[2].([]int)
+
 	children := blobs.Slice(0, 0)
 
 	// spawn children
-	for i := range blobs[0].([]geom.Vec2) {
+	for i, position := range positions {
 		if rand.Intn(40) == 0 {
-			position := breedPosition(blobs[0].([]geom.Vec2)[i])
-			if arena.Contains(position) && !collides(position) {
-				colour := mutateColour(blobs[1].([]color.RGBA)[i])
-				spawnBlob(position, colour)
+			childPos := breedPosition(position)
+			if arena.Contains(childPos) && !collides(childPos) {
+				colour := mutateColour(colours[i])
+				spawnBlob(childPos, colour)
 			}
 		}
 	}
 
 	// increase age
-	for i := range blobs[2].([]int) {
-		blobs[2].([]int)[i]++
+	for i := range ages {
+		ages[i]++
 	}
 
 	// die
 	blobs = table.Filter(blobs, func(col table.T) bool {
-		age := col[2].(int)
-		return rand.Intn(1000 - age) != 0
+		return rand.Intn(1000 - col[2].(int)) != 0
 	})
 
 	blobs = table.Append(blobs, children)

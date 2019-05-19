@@ -34,14 +34,18 @@ func blobsWindow() (*glfw.Window, error) {
 	return glfw.CreateWindow(640, 480, "Blobs", nil, nil)
 }
 
-func vertexData(positions []geom.Vec2, colours []color.RGBA) []float32 {
+func vertexData(positions []geom.Vec2, ages []int, colours []color.RGBA) []float32 {
 	slice := make([]float32, 0, 12*len(positions))
 	for i, pos := range positions {
+		grown := 1 - 1/float64(ages[i])
+		scale := grown * 10
+
+
 		verts := [4]geom.Vec2{
-			geom.Vec2{pos.X - 10, pos.Y -10},
-			geom.Vec2{pos.X + 10, pos.Y -10},
-			geom.Vec2{pos.X + 10, pos.Y +10},
-			geom.Vec2{pos.X - 10, pos.Y +10},
+			geom.Vec2{pos.X - scale, pos.Y -scale},
+			geom.Vec2{pos.X + scale, pos.Y -scale},
+			geom.Vec2{pos.X + scale, pos.Y +scale},
+			geom.Vec2{pos.X - scale, pos.Y +scale},
 		}
 
 		texcoords := [4]geom.Vec2{
@@ -122,7 +126,7 @@ func run() {
 			)
 
 			texture.Begin()
-			data := vertexData(blobs[0].([]geom.Vec2), blobs[1].([]color.RGBA))
+			data := vertexData(blobs[0].([]geom.Vec2), blobs[2].([]int), blobs[1].([]color.RGBA))
 			slice.Begin()
 			slice.SetLen(len(data) / 8)
 			slice.SetVertexData(data)

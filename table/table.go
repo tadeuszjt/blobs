@@ -6,38 +6,24 @@ import (
 
 type T []interface{}
 
-func valueOf(i interface{}) reflect.Value {
-	v := reflect.ValueOf(i)
-	if v.Kind() != reflect.Slice {
-		return reflect.Append(reflect.MakeSlice(reflect.SliceOf(v.Type()), 0, 1), v)
-	}
-	return v
-}
-
 func Append(a, b T) T {
 	if len(a) != len(b) {
-		panic("tables don't match")
+		panic("Append(a, b, T) T: table mismatch")
 	}
-	t := make(T, len(b))
+	ret := make(T, len(a))
 
-	for row := range t {
+	for row := range ret {
 		va := reflect.ValueOf(a[row])
-		if va.Kind() != reflect.Slice {
-			va = reflect.Append(
-				reflect.MakeSlice(reflect.SliceOf(va.Type()), 0, 1),
-				va,
-			)
-		}
-
 		vb := reflect.ValueOf(b[row])
+
 		if vb.Kind() == reflect.Slice {
-			t[row] = reflect.AppendSlice(va, vb).Interface()
+			ret[row] = reflect.AppendSlice(va, vb).Interface()
 		} else {
-			t[row] = reflect.Append(va, vb).Interface()
+			ret[row] = reflect.Append(va, vb).Interface()
 		}
 	}
 
-	return t
+	return ret
 }
 
 func Filter(t T, f func(column T) bool) T {
@@ -46,12 +32,8 @@ func Filter(t T, f func(column T) bool) T {
 
 	for i := 0; i < t.Len(); i++ {
 		for row := range t {
-			vt := reflect.ValueOf(t[row])
-			if vt.Kind() == reflect.Slice {
-				col[row] = vt.Index(i).Interface()
-			} else {
-				col[row] = t[row]
-			}
+			v := reflect.ValueOf(t[row])
+			col[row] = v.Index(i).Interface()
 		}
 
 		if f(col) {
@@ -65,41 +47,25 @@ func Filter(t T, f func(column T) bool) T {
 	return ret
 }
 
-func (t T) Delete(column int) {
-	for row := range t {
-		v := valueOf(t[row])
-		s1 := v.Slice(0, column)
-		s2 := v.Slice(column+1, v.Len())
-		t[row] = reflect.AppendSlice(s1, s2).Interface()
-	}
-}
-
-func (t T) DeleteUnordered(column int) {
-	for row := range t {
-		v := valueOf(t[row])
-		end := v.Len() - 1
-		reflect.Swapper(v.Interface())(column, end)
-		t[row] = v.Slice(0, end).Interface()
-	}
-}
-
 func (t T) Slice(i, j int) T {
-	r := make(T, 0, len(t))
+	ret := make(T, len(t))
 	for row := range t {
-		v := valueOf(t[row])
-		r = append(r, v.Slice(i, j).Interface())
+		v := reflect.ValueOf(t[row])
+		ret[row] = v.Slice(i, j).Interface()
 	}
-	return r
+	return ret
+}
+
+func (t T) Swap(i, j int) {
+	for row := range t {
+		reflect.Swapper(t[row])(i, j)
+	}
 }
 
 func (t T) Len() int {
-	if len(t) > 0 {
-		v := reflect.ValueOf(t[0])
-		if v.Kind() == reflect.Slice {
-			return v.Len()
-		} else {
-			return 1
-		}
+	if len(t) == 0 {
+		return 0
 	}
-	return 0
+
+	return reflect.ValueOf(t[0]).Len()
 }
