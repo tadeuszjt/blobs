@@ -8,7 +8,16 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/tadeuszjt/blobs/geom"
+	_ "net/http/pprof"
+	"net/http"
+	"log"
 )
+
+func init() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+}
 
 func check(err error) {
 	if err != nil {
