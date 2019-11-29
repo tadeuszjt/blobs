@@ -2,17 +2,15 @@ package main
 
 import (
 	"github.com/tadeuszjt/blobs/geom"
-	"github.com/tadeuszjt/blobs/table"
 	"image/color"
 	"math/rand"
 )
 
-
 var (
-	blobs = table.T{
-		[]geom.Vec2{},  // position
-		[]color.RGBA{}, // colour
-		[]int{},        // age
+	blobs struct {
+		position []geom.Vec2
+		colour   []color.RGBA
+		age      []int
 	}
 	arena geom.Rect = geom.RectCentered(2000, 2000, geom.Vec2{})
 )
@@ -27,15 +25,13 @@ func init() {
 }
 
 func spawnBlob(pos geom.Vec2, colour color.RGBA) {
-	blobs = table.Append(blobs, table.T{
-		pos,
-		colour,
-		0,
-	})
+	blobs.position = append(blobs.position, pos)
+	blobs.colour = append(blobs.colour, colour)
+	blobs.age = append(blobs.age, 0)
 }
 
 func collides(v geom.Vec2) bool {
-	for _, p := range blobs[0].([]geom.Vec2) {
+	for _, p := range blobs.position {
 		if p.Minus(v).Len2() < 16*16 {
 			return true
 		}
@@ -50,32 +46,35 @@ func breedPosition(parent geom.Vec2) geom.Vec2 {
 }
 
 func update() {
-	positions := blobs[0].([]geom.Vec2)
-	colours := blobs[1].([]color.RGBA)
-	ages := blobs[2].([]int)
-
-	children := blobs.Slice(0, 0)
-
 	// spawn children
-	for i, position := range positions {
-		if rand.Intn(40) == 0 {
+	for i, position := range blobs.position {
+		if rand.Intn(80) == 0 {
 			childPos := breedPosition(position)
 			if arena.Contains(childPos) && !collides(childPos) {
-				colour := mutateColour(colours[i])
+				colour := mutateColour(blobs.colour[i])
 				spawnBlob(childPos, colour)
 			}
 		}
 	}
 
 	// increase age
-	for i := range ages {
-		ages[i]++
+	for i := range blobs.age {
+		blobs.age[i]++
 	}
 
 	// die
-	blobs = table.Filter(blobs, func(col table.T) bool {
-		return rand.Intn(1000 - col[2].(int)) != 0
-	})
-
-	blobs = table.Append(blobs, children)
+	for i := 0; i < len(blobs.position); i++ {
+		if (rand.Intn(800) == 0) {
+			end := len(blobs.position) - 1
+			if (i < end) {
+				blobs.position[i] = blobs.position[end]
+				blobs.colour[i] = blobs.colour[end]
+				blobs.age[i] = blobs.age[end]
+			}
+			
+			blobs.position = blobs.position[:end]
+			blobs.colour = blobs.colour[:end]
+			blobs.age = blobs.age[:end]
+		}
+	}
 }
