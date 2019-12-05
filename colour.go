@@ -1,8 +1,8 @@
 package main
 
 import (
-	"math/rand"
 	"image/color"
+	"math/rand"
 )
 
 func randColour() color.RGBA {
@@ -30,4 +30,3 @@ func mutateColour(c color.RGBA) color.RGBA {
 
 	return c
 }
-

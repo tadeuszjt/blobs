@@ -40,7 +40,7 @@ func collides(v geom.Vec2) bool {
 }
 
 func breedPosition(parent geom.Vec2) geom.Vec2 {
-	dist := rand.Float32() * 20 + 16
+	dist := rand.Float32()*20 + 16
 	vec := geom.Vec2RandNormal().ScaledBy(dist)
 	return parent.Plus(vec)
 }
@@ -64,14 +64,14 @@ func update() {
 
 	// die
 	for i := 0; i < len(blobs.position); i++ {
-		if (rand.Intn(800) == 0) {
+		if rand.Intn(800) == 0 {
 			end := len(blobs.position) - 1
-			if (i < end) {
+			if i < end {
 				blobs.position[i] = blobs.position[end]
 				blobs.colour[i] = blobs.colour[end]
 				blobs.age[i] = blobs.age[end]
 			}
-			
+
 			blobs.position = blobs.position[:end]
 			blobs.colour = blobs.colour[:end]
 			blobs.age = blobs.age[:end]

@@ -53,7 +53,7 @@ func run() {
 		glhf.Init()
 
 		glfwWin.MakeContextCurrent()
-		
+
 		glfwWin.SetFramebufferSizeCallback(func(w *glfw.Window, width, height int) {
 			gl.Viewport(0, 0, int32(width), int32(height))
 			winConfig.ResizeFunc(width, height)
@@ -81,17 +81,17 @@ func run() {
 		if err != nil {
 			return
 		}
-		
+
 		glfwWin.SetCursorPosCallback(func(w *glfw.Window, xpos, ypos float64) {
 			winConfig.MouseFunc(&win, MouseMove{geom.Vec2{float32(xpos), float32(ypos)}})
 		})
-		
+
 		glfwWin.SetScrollCallback(func(w *glfw.Window, dx, dy float64) {
 			winConfig.MouseFunc(&win, MouseScroll{float32(dx), float32(dy)})
 		})
-		
+
 		glfwWin.SetMouseButtonCallback(func(
-			w *glfw.Window, 
+			w *glfw.Window,
 			button glfw.MouseButton,
 			action glfw.Action,
 			mods glfw.ModifierKey,
@@ -100,11 +100,11 @@ func run() {
 		})
 
 		slice = glhf.MakeVertexSlice(shader, 0, 0)
-		
+
 		size := win.GetFrameSize()
 		winConfig.ResizeFunc(int(size.X), int(size.Y))
 	})
-	
+
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Gfx Error:", err)
 		return

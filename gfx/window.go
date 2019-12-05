@@ -18,7 +18,6 @@ func (w *Win) GetFrameSize() geom.Vec2 {
 	width, height := w.glfwWin.GetFramebufferSize()
 	return geom.Vec2{float32(width), float32(height)}
 }
-	
 
 func (w *Win) LoadTexture(path string) (TexID, error) {
 	width, height, pixels, err := loadImage(path)
@@ -46,4 +45,3 @@ func (w *Win) loadTextureFromPixels(width, height int, pixels []uint8) TexID {
 	w.textures = append(w.textures, tex)
 	return TexID(len(w.textures) - 1)
 }
-
