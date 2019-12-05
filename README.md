@@ -1,4 +1,4 @@
 # blobs
 little blob plants
 
-![alt text](https://raw.githubusercontent.com/tadeuszjt/blobs/screenshot.png)
+![alt text](https://github.com/tadeuszjt/blobs/blob/master/screenshot.png)
