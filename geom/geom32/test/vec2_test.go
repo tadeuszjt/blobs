@@ -1,7 +1,7 @@
 package geomTest
 
 import (
-	"github.com/tadeuszjt/geom"
+	"github.com/tadeuszjt/geom/geom32"
 	"math"
 	"math/rand"
 	"testing"
@@ -62,7 +62,7 @@ func TestVec2Minus(t *testing.T) {
 
 func TestVec2ScaledBy(t *testing.T) {
 	cases := []struct {
-		scalar    float64
+		scalar    float32
 		v, result geom.Vec2
 	}{
 		{0, geom.Vec2{0, 0}, geom.Vec2{0, 0}},
@@ -145,7 +145,7 @@ func TestVec2RandNormal(t *testing.T) {
 			t.Errorf("%v: expected length 1, got %v", v, length)
 		}
 
-		theta := math.Atan2(v.Y, v.X)
+		theta := math.Atan2(float64(v.Y), float64(v.X))
 		switch {
 		case theta > math.Pi*-1.0 && theta < math.Pi*-0.5:
 			sections[0] = true
@@ -169,7 +169,7 @@ func TestVec2Len2(t *testing.T) {
 	// a2 = b2 + c2
 	cases := []struct {
 		vec  geom.Vec2
-		len2 float64
+		len2 float32
 	}{
 		{geom.Vec2{}, 0},
 		{geom.Vec2{1, 0}, 1},
@@ -191,7 +191,7 @@ func TestVec2Len2(t *testing.T) {
 
 func TestVec2RotatedBy(t *testing.T) {
 	cases := []struct {
-		theta     float64
+		theta     float32
 		v, result geom.Vec2
 	}{
 		{0, geom.Vec2{}, geom.Vec2{}},
@@ -216,7 +216,7 @@ func TestVec2RotatedBy(t *testing.T) {
 func TestVec2Cross(t *testing.T) {
 	cases := []struct {
 		a, b   geom.Vec2
-		result float64
+		result float32
 	}{
 		{geom.Vec2{}, geom.Vec2{}, 0},
 		{geom.Vec2{1, 0}, geom.Vec2{0, 1}, 1},

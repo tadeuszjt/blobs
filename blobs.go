@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/tadeuszjt/blobs/geom"
+	"github.com/tadeuszjt/blobs/geom/geom32"
 	"image/color"
 	"math/rand"
 )
@@ -40,8 +40,8 @@ func collides(v geom.Vec2) bool {
 }
 
 func breedPosition(parent geom.Vec2) geom.Vec2 {
-	dist := rand.Float64() * 20 + 16
-	vec := geom.Vec2RandNormal().Scaled(dist)
+	dist := rand.Float32() * 20 + 16
+	vec := geom.Vec2RandNormal().ScaledBy(dist)
 	return parent.Plus(vec)
 }
 

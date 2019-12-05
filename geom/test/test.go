@@ -14,5 +14,5 @@ func floatIdentical(a, b float64) bool {
 	return math.IsNaN(a) && math.IsNaN(b) ||
 		math.IsInf(a, -1) && math.IsInf(b, -1) ||
 		math.IsInf(a, 1) && math.IsInf(b, 1) ||
-		math.Abs(a-b) < 0.000001
+		math.Abs(a-b) < 0.0000001
 }

@@ -1,7 +1,7 @@
 package geomTest
 
 import (
-	"github.com/tadeuszjt/geom"
+	"github.com/tadeuszjt/geom/geom32"
 	"testing"
 )
 
@@ -32,7 +32,7 @@ func TestVec3Vec2(t *testing.T) {
 func TestVec3Dot(t *testing.T) {
 	cases := []struct {
 		a, b   geom.Vec3
-		result float64
+		result float32
 	}{
 		{geom.Vec3{}, geom.Vec3{}, 0},
 		{geom.Vec3{1, 2, 3}, geom.Vec3{4, 5, 6}, 32},
@@ -72,7 +72,7 @@ func TestVec3Times(t *testing.T) {
 
 func TestVec3ScaledBy(t *testing.T) {
 	cases := []struct {
-		scalar    float64
+		scalar    float32
 		v, result geom.Vec3
 	}{
 		{0, geom.Vec3{}, geom.Vec3{}},

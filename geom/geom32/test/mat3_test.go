@@ -1,7 +1,7 @@
 package geomTest
 
 import (
-	"github.com/tadeuszjt/geom"
+	"github.com/tadeuszjt/geom/geom32"
 	"testing"
 )
 
@@ -12,50 +12,6 @@ func mat3Identical(a, b geom.Mat3) bool {
 		}
 	}
 	return true
-}
-
-func TestMat3Identical(t *testing.T) {
-	cases := []struct {
-		a, b   geom.Mat3
-		result bool
-	}{
-		{geom.Mat3Identity(), geom.Mat3Identity(), true},
-		{
-			geom.Mat3{0, 1, 2, 3, 4, 5, 6, 7, 8},
-			geom.Mat3{0, 1, 2, 3, 4, 5, 6, 7, 8},
-			true,
-		},
-		{
-			geom.Mat3{0, 1, 2, 3, 4, 5, 6, 7, 8.1},
-			geom.Mat3{0, 1, 2, 3, 4, 5, 6, 7, 8},
-			false,
-		},
-		{
-			geom.Mat3{pInf, 1, 2, 3, 4, 5, 6, 7, 8},
-			geom.Mat3{pInf, 1, 2, 3, 4, 5, 6, 7, 8},
-			true,
-		},
-		{
-			geom.Mat3{pInf, 1, 2, 3, 4, 5, 6, 7, 8},
-			geom.Mat3{nInf, 1, 2, 3, 4, 5, 6, 7, 8},
-			false,
-		},
-		{
-			geom.Mat3{pInf, 1, 2, 3, nan, 5, 6, 7, 8},
-			geom.Mat3{pInf, 1, 2, 3, nan, 5, 6, 7, 8},
-			true,
-		},
-	}
-
-	for _, c := range cases {
-		expected := c.result
-		actual := mat3Identical(c.a, c.b)
-
-		if expected != actual {
-			t.Errorf("a: %v, b: %v, expected: %v, got: %v",
-				c.a, c.b, expected, actual)
-		}
-	}
 }
 
 func TestMat3Identity(t *testing.T) {
@@ -74,7 +30,7 @@ func TestMat3TimesVec2(t *testing.T) {
 	for _, c := range []struct {
 		mat    geom.Mat3
 		vec    geom.Vec2
-		bias   float64
+		bias   float32
 		result geom.Vec3
 	}{
 		{

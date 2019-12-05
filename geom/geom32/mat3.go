@@ -1,6 +1,6 @@
 package geom
 
-type Mat3 [9]float64
+type Mat3 [9]float32
 
 func Mat3Identity() Mat3 {
 	return Mat3{
@@ -26,7 +26,7 @@ func (a Mat3) Product(b Mat3) Mat3 {
 	}
 }
 
-func (m Mat3) TimesVec2(v Vec2, bias float64) Vec3 {
+func (m Mat3) TimesVec2(v Vec2, bias float32) Vec3 {
 	return Vec3{
 		X: m[0]*v.X + m[1]*v.Y + m[2]*bias,
 		Y: m[3]*v.X + m[4]*v.Y + m[5]*bias,
